@@ -1,9 +1,4 @@
-
-
-
-
-
-const STORAGE_KEY = 'taskflow_taks';
+const STORAGE_KEY = 'taskflow_tasks';
 
 function saveTasks(tasks) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
@@ -81,3 +76,60 @@ document.addEventListener('keydown', e => {
     if (item.innerHTML.includes(page)) item.classList.add('active');
   });
 })();
+
+// Add event listener for "Create Task" button
+document.addEventListener('DOMContentLoaded', () => {
+  const createTaskButton = document.getElementById('create-task-btn');
+  const taskTitleInput = document.getElementById('task-title');
+  const taskDescInput = document.getElementById('task-desc');
+  const taskPriorityInput = document.getElementById('task-priority');
+  const taskDueDateInput = document.getElementById('task-due-date');
+
+  if (createTaskButton) {
+    createTaskButton.addEventListener('click', () => {
+      const title = taskTitleInput.value;
+      const desc = taskDescInput.value;
+      const priority = taskPriorityInput.value;
+      const dueDate = taskDueDateInput.value;
+
+      if (!title || !dueDate) {
+        showToast('Title and Due Date are required!');
+        return;
+      }
+
+      const newTask = createTask(title, desc, priority, dueDate);
+      const tasks = loadTasks();
+      tasks.push(newTask);
+      saveTasks(tasks);
+
+      updateDashboard(newTask);
+      showToast('Task created successfully!');
+
+      // Clear input fields
+      taskTitleInput.value = '';
+      taskDescInput.value = '';
+      taskPriorityInput.value = '';
+      taskDueDateInput.value = '';
+
+      closeModal('create-task-modal', 'overlay');
+    });
+  }
+});
+
+// Function to update the dashboard dynamically
+function updateDashboard(task) {
+  const dashboard = document.getElementById('dashboard-tasks');
+  if (!dashboard) return;
+
+  const taskElement = document.createElement('div');
+  taskElement.className = 'task-item';
+  taskElement.innerHTML = `
+    <h3>${escapeHTML(task.title)}</h3>
+    <p>${escapeHTML(task.desc)}</p>
+    <p>Priority: ${escapeHTML(task.priority)}</p>
+    <p>Due: ${formatDate(task.dueDate)}</p>
+    <p>Status: ${task.done ? 'Completed' : 'In Progress'}</p>
+  `;
+
+  dashboard.appendChild(taskElement);
+}
